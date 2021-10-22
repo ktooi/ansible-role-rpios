@@ -1,0 +1,39 @@
+---
+#- include_tasks: "{{ item }}"
+#  with_first_found:
+#    - files:
+#        - "setup-{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+#        - "setup-{{ ansible_os_family }}.yml"
+
+- name: configure console to desktop or cli
+  file:
+    src: "/lib/systemd/system/{{ 'graphical' if rpios_gui_enabled else 'multi-user' }}.target"
+    path: /etc/systemd/system/default.target
+    state: link
+  notify: reboot rpios
+  become: true
+
+- name: configure autologin
+  template:
+    src: autologin.conf.j2
+    dest: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+  when: rpios_autologin_enabled
+  notify: reboot rpios
+  become: true
+
+- name: revoke autologin
+  file:
+    path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+    state: absent
+  when: not rpios_autologin_enabled
+  notify: reboot rpios
+  become: true
+
+- name: configure /boot/config.txt
+  lineinfile:
+    path: /boot/config.txt
+    regexp: '^#?{{ item.key }}=.*$'
+    line: "{{ item.key ~ '=' ~ item.value if item.value else '#' ~ item.key ~ '=' }}"
+  loop:  "{{ rpios_boot_config | dict2items }}"
+  notify: reboot rpios
+  become: true
