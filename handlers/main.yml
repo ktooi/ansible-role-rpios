@@ -1,3 +1,4 @@
 - name: reboot rpios
   reboot:
     reboot_timeout: "{{ rpios_reboot_timeout | default(omit) }}"
+  become: true
