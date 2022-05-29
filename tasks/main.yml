@@ -37,3 +37,12 @@
   loop:  "{{ rpios_boot_config | dict2items }}"
   notify: reboot rpios
   become: true
+
+- name: configure /boot/config.txt (dtparam)
+  lineinfile:
+    path: /boot/config.txt
+    regexp: '^#?dtparam={{ item.key }}=.*$'
+    line: "{{ 'dtparam=' ~ item.key ~ '=' ~ item.value if item.value else '#dtparam=' ~ item.key ~ '=' }}"
+  loop:  "{{ rpios_boot_config_dtparams | dict2items }}"
+  notify: reboot rpios
+  become: true

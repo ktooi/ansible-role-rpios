@@ -3,3 +3,4 @@ rpios_gui_enabled: true
 rpios_autologin_enabled: true
 rpios_autologin_user: pi
 rpios_boot_config: {}
+rpios_boot_config_dtparams: {}
